@@ -1,0 +1,116 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}{{ year }} - {{ settings.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Year View - {{ year }}</h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'year_view' year=year|add:'-1' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                ← {{ year|add:'-1' }}
+            </a>
+            <a href="{% url 'year_view' year=year|add:'1' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                {{ year|add:'1' }} →
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">State Day Counts</h2>
+            {% if state_counts %}
+                <div class="space-y-4">
+                    {% for state, data in state_counts.items %}
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-medium">{{ state.name }} ({{ state.abbreviation }})</span>
+                                <span class="text-sm text-gray-600">{{ data.count }} / {{ data.threshold }} days</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ data.percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ data.percentage|floatformat:1 }}% of threshold</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No days recorded for any states this year.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="lg:col-span-1">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Quick Actions</h2>
+            <div class="space-y-2">
+                <a href="{% url 'day_bulk_edit' %}" class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded hover:bg-blue-700">
+                    Bulk Edit Days
+                </a>
+                <a href="{% url 'admin:tracker_day_add' %}" class="block w-full px-4 py-2 bg-green-600 text-white text-center rounded hover:bg-green-700">
+                    Add Single Day
+                </a>
+                <a href="{% url 'admin:tracker_state_changelist' %}" class="block w-full px-4 py-2 bg-gray-600 text-white text-center rounded hover:bg-gray-700">
+                    Manage States
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold">Days in {{ year }}</h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">States</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Office</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for day in days %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {{ day.date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ day.get_day_type_display }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% for state in day.states.all %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ state.abbreviation }}
+                                </span>
+                            {% endfor %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ day.office.name|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {{ day.note|truncatewords:10|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <a href="{% url 'admin:tracker_day_change' day.id %}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                            No days recorded for {{ year }}. <a href="{% url 'day_bulk_edit' %}" class="text-blue-600 hover:text-blue-900">Add some days</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -112,6 +112,11 @@ USE_I18N = True
 USE_TZ = True
 
 
+# Application name
+APP_NAME = "Taxit"
+APP_FULL_NAME = "Taxit - Tax Residency Tracker"
+
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 

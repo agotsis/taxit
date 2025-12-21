@@ -1,0 +1,50 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Ratio Views - {{ settings.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900">Ratio Views</h1>
+        <a href="{% url 'admin:tracker_ratioview_add' %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            Create Ratio View
+        </a>
+    </div>
+    <p class="text-gray-600 mt-2">Analyze state day ratios over custom date ranges for vesting periods or year counts</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for ratio_view in ratio_views %}
+        <div class="bg-white rounded-lg shadow hover:shadow-lg transition-shadow">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ ratio_view.name }}</h3>
+                <div class="text-sm text-gray-600 space-y-1 mb-4">
+                    <p><span class="font-medium">Start:</span> {{ ratio_view.start_date|date:"M d, Y" }}</p>
+                    <p><span class="font-medium">End:</span> {{ ratio_view.end_date|date:"M d, Y" }}</p>
+                    <p><span class="font-medium">Duration:</span> {{ ratio_view.days_in_range }} days</p>
+                </div>
+                {% if ratio_view.description %}
+                    <p class="text-sm text-gray-500 mb-4">{{ ratio_view.description|truncatewords:20 }}</p>
+                {% endif %}
+                <div class="flex space-x-2">
+                    <a href="{% url 'ratio_view_detail' ratio_view.pk %}" 
+                       class="flex-1 px-4 py-2 bg-blue-600 text-white text-center rounded hover:bg-blue-700 text-sm">
+                        View Analysis
+                    </a>
+                    <a href="{% url 'admin:tracker_ratioview_change' ratio_view.id %}" 
+                       class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm">
+                        Edit
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-span-full bg-white rounded-lg shadow p-8 text-center">
+            <p class="text-gray-500 mb-4">No ratio views yet. Create one to analyze state day ratios over custom periods.</p>
+            <a href="{% url 'admin:tracker_ratioview_add' %}" class="inline-block px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                Create Your First Ratio View
+            </a>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
