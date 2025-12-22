@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-bold text-gray-900">{{ ratio_view.name }}</h1>
             <p class="text-gray-600 mt-1">
                 {{ ratio_view.start_date|date:"M d, Y" }} - {{ ratio_view.end_date|date:"M d, Y" }} 
-                ({{ total_days }} days)
+                ({{ total_days }} workdays)
             </p>
         </div>
         <a href="{% url 'ratio_view_list' %}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
@@ -17,7 +17,7 @@
         </a>
     </div>
     {% if ratio_view.description %}
-        <p class="text-gray-700 mt-4">{{ ratio_view.description }}</p>
+        <p class="text-gray-700 mt-4">{{ ratio_view.description|linebreaksbr }}</p>
     {% endif %}
 </div>
 
@@ -30,12 +30,12 @@
                     <div>
                         <div class="flex justify-between items-center mb-1">
                             <span class="font-medium">{{ state.name }} ({{ state.abbreviation }})</span>
-                            <span class="text-sm text-gray-600">{{ data.count }} / {{ data.threshold }} days</span>
+                            <span class="text-sm text-gray-600">{{ data.count }} / {{ total_workdays_logged }} workdays</span>
                         </div>
                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ data.percentage|floatformat:0 }}%"></div>
+                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ data.ratio|floatformat:0 }}%"></div>
                         </div>
-                        <div class="text-xs text-gray-500 mt-1">{{ data.percentage|floatformat:1 }}% of threshold</div>
+                        <div class="text-xs text-gray-500 mt-1">{{ data.ratio|floatformat:1 }}% of workdays</div>
                     </div>
                 {% endfor %}
             </div>
@@ -48,7 +48,7 @@
         <h2 class="text-xl font-semibold mb-4">Summary</h2>
         <div class="space-y-3">
             <div class="flex justify-between">
-                <span class="text-gray-600">Total Days in Range:</span>
+                <span class="text-gray-600">Total Workdays in Range:</span>
                 <span class="font-semibold">{{ total_days }}</span>
             </div>
             <div class="flex justify-between">
@@ -98,7 +98,7 @@
                             {{ day.office.name|default:"-" }}
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
-                            {{ day.note|truncatewords:10|default:"-" }}
+                            {{ day.note|linebreaksbr|default:"-" }}
                         </td>
                     </tr>
                 {% empty %}

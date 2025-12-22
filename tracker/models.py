@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 from django.db import models
 
 
@@ -41,7 +42,7 @@ class Day(models.Model):
     class DayType(models.TextChoices):
         STANDARD_WORKDAY = 'WORK', 'Standard Workday'
         PTO_WORKDAY = 'PTO_WORK', 'PTO Workday Mix'
-        COMPANY_HOLIDAY = 'HOLIDAY', 'Company Holiday'
+        COMPANY_HOLIDAY = 'HOLIDAY', 'Company Holiday on which we worked'
     
     date = models.DateField(unique=True)
     day_type = models.CharField(
@@ -88,3 +89,15 @@ class RatioView(models.Model):
     @property
     def days_in_range(self):
         return (self.end_date - self.start_date).days + 1
+    
+    @property
+    def workdays_in_range(self):
+        """Return the count of workdays (Mon–Fri) in the date range."""
+        total_days = (self.end_date - self.start_date).days + 1
+        workdays = 0
+        current = self.start_date
+        for _ in range(total_days):
+            if current.weekday() < 5:  # Monday=0, Friday=4
+                workdays += 1
+            current += timedelta(days=1)
+        return workdays

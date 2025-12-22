@@ -108,9 +108,14 @@ def ratio_view_detail(request, pk):
     """Show detailed analysis for a specific ratio view."""
     ratio_view = get_object_or_404(RatioView, pk=pk)
     
+    # Filter to workdays only (Monday=0 through Friday=4)
     days = Day.objects.filter(
-        date__range=[ratio_view.start_date, ratio_view.end_date]
+        date__range=[ratio_view.start_date, ratio_view.end_date],
+        date__week_day__in=[1, 2, 3, 4, 5]  # Django ORM: 1=Monday ... 5=Friday
     ).prefetch_related('states')
+    
+    # Total workdays with any state logged in the period
+    total_workdays_logged = days.filter(states__isnull=False).distinct().count()
     
     states = State.objects.all()
     state_counts = {}
@@ -120,14 +125,16 @@ def ratio_view_detail(request, pk):
             state_counts[state] = {
                 'count': count,
                 'threshold': state.day_threshold,
-                'percentage': (count / state.day_threshold * 100) if state.day_threshold > 0 else 0
+                'percentage': (count / state.day_threshold * 100) if state.day_threshold > 0 else 0,
+                'ratio': (count / total_workdays_logged * 100) if total_workdays_logged > 0 else 0
             }
     
     context = {
         'ratio_view': ratio_view,
         'days': days,
         'state_counts': state_counts,
-        'total_days': ratio_view.days_in_range,
+        'total_days': ratio_view.workdays_in_range,
+        'total_workdays_logged': total_workdays_logged,
         'settings': settings,
     }
     return render(request, 'tracker/ratio_view_detail.html', context)

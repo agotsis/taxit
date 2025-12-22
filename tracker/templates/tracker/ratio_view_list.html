@@ -21,7 +21,7 @@
                 <div class="text-sm text-gray-600 space-y-1 mb-4">
                     <p><span class="font-medium">Start:</span> {{ ratio_view.start_date|date:"M d, Y" }}</p>
                     <p><span class="font-medium">End:</span> {{ ratio_view.end_date|date:"M d, Y" }}</p>
-                    <p><span class="font-medium">Duration:</span> {{ ratio_view.days_in_range }} days</p>
+                    <p><span class="font-medium">Duration:</span> {{ ratio_view.days_in_range }} days ({{ ratio_view.workdays_in_range }} workdays)</p>
                 </div>
                 {% if ratio_view.description %}
                     <p class="text-sm text-gray-500 mb-4">{{ ratio_view.description|truncatewords:20 }}</p>
