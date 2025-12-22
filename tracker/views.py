@@ -10,10 +10,66 @@ import calendar
 from .models import Day, State, Office, RatioView
 
 
+def generate_calendar_month(year, month, start_date=None, end_date=None):
+    """Generate calendar data for a single month with day objects."""
+    cal = calendar.Calendar(firstweekday=calendar.MONDAY).monthdayscalendar(year, month)
+    
+    # Query days for this month
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+    
+    days = Day.objects.filter(
+        date__range=[month_start, month_end]
+    ).prefetch_related('states', 'office')
+    
+    days_by_date = {day.date: day for day in days}
+    
+    month_data = {
+        'year': year,
+        'month': month,
+        'month_name': date(year, month, 1).strftime('%B %Y'),
+        'weeks': []
+    }
+    
+    for week in cal:
+        week_data = []
+        for day_num in week:
+            if day_num == 0:
+                week_data.append(None)
+            else:
+                day_date = date(year, month, day_num)
+                day_obj = days_by_date.get(day_date)
+                in_range = True
+                if start_date and end_date:
+                    in_range = start_date <= day_date <= end_date
+                week_data.append({
+                    'date': day_date,
+                    'day': day_obj,
+                    'in_range': in_range
+                })
+        month_data['weeks'].append(week_data)
+    
+    return month_data
+
+
 def year_view(request, year=None):
     """Display days and state counts for a specific year."""
     if year is None:
         year = datetime.now().year
+    
+    month = request.GET.get('month')
+    if month:
+        try:
+            month = int(month)
+            if month < 1 or month > 12:
+                month = datetime.now().month
+        except ValueError:
+            month = datetime.now().month
+    else:
+        month = datetime.now().month
     
     start_date = date(year, 1, 1)
     end_date = date(year, 12, 31)
@@ -31,11 +87,36 @@ def year_view(request, year=None):
                 'percentage': (count / state.day_threshold * 100) if state.day_threshold > 0 else 0
             }
     
+    calendar_month = generate_calendar_month(year, month)
+    
+    # Calculate prev/next month
+    if month == 1:
+        prev_month = 12
+        prev_year = year - 1
+    else:
+        prev_month = month - 1
+        prev_year = year
+    
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else:
+        next_month = month + 1
+        next_year = year
+    
     context = {
         'year': year,
         'days': days,
         'state_counts': state_counts,
         'states': states,
+        'calendar_month': calendar_month,
+        'current_month': month,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'day_types': Day.DayType.choices,
+        'offices': Office.objects.all(),
         'settings': settings,
     }
     return render(request, 'tracker/year_view.html', context)
@@ -112,10 +193,25 @@ def ratio_view_detail(request, pk):
     """Show detailed analysis for a specific ratio view."""
     ratio_view = get_object_or_404(RatioView, pk=pk)
     
-    # Filter to workdays only (Monday=0 through Friday=4)
+    month_param = request.GET.get('month')
+    year_param = request.GET.get('year')
+    
+    if month_param and year_param:
+        try:
+            month = int(month_param)
+            year = int(year_param)
+            if month < 1 or month > 12:
+                month = ratio_view.start_date.month
+                year = ratio_view.start_date.year
+        except ValueError:
+            month = ratio_view.start_date.month
+            year = ratio_view.start_date.year
+    else:
+        month = ratio_view.start_date.month
+        year = ratio_view.start_date.year
+    
     days = Day.objects.filter(
-        date__range=[ratio_view.start_date, ratio_view.end_date],
-        date__week_day__in=[2, 3, 4, 5, 6]  # Django ORM: 2=Monday ... 6=Friday
+        date__range=[ratio_view.start_date, ratio_view.end_date]
     ).prefetch_related('states', 'office')
     
     # Total workdays with any state logged in the period
@@ -133,52 +229,48 @@ def ratio_view_detail(request, pk):
                 'ratio': (count / total_workdays_logged * 100) if total_workdays_logged > 0 else 0
             }
     
-    # Generate calendar data for each month in the period
-    calendar_months = []
-    current = date(ratio_view.start_date.year, ratio_view.start_date.month, 1)
-    end_month = date(ratio_view.end_date.year, ratio_view.end_date.month, 1)
+    # Generate calendar for current month
+    calendar_month = generate_calendar_month(year, month, ratio_view.start_date, ratio_view.end_date)
     
-    # Create a lookup dict for days by date
-    days_by_date = {day.date: day for day in days}
+    # Calculate prev/next month within the ratio view range
+    current_date = date(year, month, 1)
     
-    while current <= end_month:
-        cal = calendar.monthcalendar(current.year, current.month)
-        month_data = {
-            'year': current.year,
-            'month': current.month,
-            'month_name': current.strftime('%B %Y'),
-            'weeks': []
-        }
-        
-        for week in cal:
-            week_data = []
-            for day_num in week:
-                if day_num == 0:
-                    week_data.append(None)
-                else:
-                    day_date = date(current.year, current.month, day_num)
-                    day_obj = days_by_date.get(day_date)
-                    week_data.append({
-                        'date': day_date,
-                        'day': day_obj,
-                        'in_range': ratio_view.start_date <= day_date <= ratio_view.end_date
-                    })
-            month_data['weeks'].append(week_data)
-        
-        calendar_months.append(month_data)
-        # Move to next month
-        if current.month == 12:
-            current = date(current.year + 1, 1, 1)
-        else:
-            current = date(current.year, current.month + 1, 1)
+    if month == 1:
+        prev_month = 12
+        prev_year = year - 1
+    else:
+        prev_month = month - 1
+        prev_year = year
+    
+    if month == 12:
+        next_month = 1
+        next_year = year + 1
+    else:
+        next_month = month + 1
+        next_year = year
+    
+    # Check if prev/next are within range
+    prev_date = date(prev_year, prev_month, 1)
+    next_date = date(next_year, next_month, 1)
+    
+    has_prev = prev_date >= date(ratio_view.start_date.year, ratio_view.start_date.month, 1)
+    has_next = next_date <= date(ratio_view.end_date.year, ratio_view.end_date.month, 1)
     
     context = {
         'ratio_view': ratio_view,
         'days': days,
         'state_counts': state_counts,
-        'total_days': ratio_view.workdays_in_range,
+        'total_days': total_workdays_logged,  # Use actual workdays logged
         'total_workdays_logged': total_workdays_logged,
-        'calendar_months': calendar_months,
+        'calendar_month': calendar_month,
+        'current_month': month,
+        'current_year': year,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'has_prev': has_prev,
+        'has_next': has_next,
         'day_types': Day.DayType.choices,
         'states': State.objects.all(),
         'offices': Office.objects.all(),

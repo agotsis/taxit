@@ -92,12 +92,8 @@ class RatioView(models.Model):
     
     @property
     def workdays_in_range(self):
-        """Return the count of workdays (Mon–Fri) in the date range."""
-        total_days = (self.end_date - self.start_date).days + 1
-        workdays = 0
-        current = self.start_date
-        for _ in range(total_days):
-            if current.weekday() < 5:  # Monday=0, Friday=4
-                workdays += 1
-            current += timedelta(days=1)
-        return workdays
+        """Return the count of actual workdays (days with state entries) in the date range."""
+        return Day.objects.filter(
+            date__range=[self.start_date, self.end_date],
+            states__isnull=False
+        ).distinct().count()

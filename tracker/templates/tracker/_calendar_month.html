@@ -1,0 +1,71 @@
+<!-- Calendar Month View with Navigation -->
+<div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+        <h2 class="text-xl font-semibold">Calendar View</h2>
+        <div class="flex items-center space-x-4">
+            {% if has_prev %}
+                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    ← Previous
+                </a>
+            {% else %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+                    ← Previous
+                </span>
+            {% endif %}
+            <span class="font-medium">{{ calendar_month.month_name }}</span>
+            {% if has_next %}
+                <a href="?month={{ next_month }}&year={{ next_year }}" class="px-3 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                    Next →
+                </a>
+            {% else %}
+                <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+                    Next →
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-7 gap-1">
+            <!-- Day headers -->
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Mon</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Tue</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Wed</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Thu</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Fri</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Sat</div>
+            <div class="text-center text-sm font-medium text-gray-500 py-2">Sun</div>
+            
+            <!-- Calendar days -->
+            {% for week in calendar_month.weeks %}
+                {% for day_info in week %}
+                    {% if day_info %}
+                        <div class="border rounded p-2 min-h-[80px] {% if not day_info.in_range %}bg-gray-50{% endif %} {% if day_info.in_range %}cursor-pointer hover:bg-gray-100{% endif %}"
+                             {% if day_info.in_range %}onclick="openDayModal('{{ day_info.date|date:"Y-m-d" }}')"{% endif %}>
+                            <div class="relative">
+                                <div class="text-sm font-medium {% if not day_info.in_range %}text-gray-400{% else %}text-gray-900{% endif %}">
+                                    {{ day_info.date.day }}
+                                </div>
+                                {% if day_info.day and day_info.day.office %}
+                                    <div class="absolute top-0 right-0 text-xs text-gray-500">
+                                        {{ day_info.day.office.name|truncatechars:8 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if day_info.day %}
+                                <div class="mt-1 space-y-1">
+                                    {% for state in day_info.day.states.all %}
+                                        <span class="inline-block px-1 py-0.5 text-xs rounded bg-blue-100 text-blue-800 w-full text-center truncate">
+                                            {{ state.abbreviation }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="border rounded p-2 min-h-[80px]"></div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
