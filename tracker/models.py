@@ -19,6 +19,7 @@ class State(models.Model):
 class Office(models.Model):
     """An office location with coordinates."""
     name = models.CharField(max_length=200)
+    place_id = models.CharField(max_length=255, unique=True, null=True, blank=True, help_text="Google maps PlaceID, if available")
     latitude = models.DecimalField(max_digits=17, decimal_places=14)
     longitude = models.DecimalField(max_digits=17, decimal_places=14)
     state = models.ForeignKey(

@@ -14,3 +14,5 @@ db.sqlite3
 
 # Environment variables
 .env
+
+data
