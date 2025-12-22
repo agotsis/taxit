@@ -122,7 +122,7 @@ APP_NAME = "Taxit"
 APP_FULL_NAME = "Taxit - Tax Residency Tracker"
 
 # Google Maps API Key
-GOOGLE_MAPS_API_KEY = os.getenv('GOOGLE_MAPS_API_KEY', '')
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
 
 
 # Static files (CSS, JavaScript, Images)

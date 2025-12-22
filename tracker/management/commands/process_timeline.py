@@ -1,7 +1,6 @@
 import json
 import yaml
-import argparse
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -11,77 +10,73 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 
 class Command(BaseCommand):
-    help = 'Process timeline segments and categorize days by state based on placeId matching'
+    help = "Process timeline segments and categorize days by state based on placeId matching"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            'file_path',
+            "file_path",
             type=str,
-            help='Path to YAML or JSON file containing timeline segments'
+            help="Path to YAML or JSON file containing timeline segments",
+        )
+        parser.add_argument("place_id", type=str, help="PlaceId to match against timeline segments")
+        parser.add_argument(
+            "state_abbreviation",
+            type=str,
+            help="State abbreviation to categorize matching segments as",
         )
         parser.add_argument(
-            'place_id',
+            "--office-name",
             type=str,
-            help='PlaceId to match against timeline segments'
+            help="Office name to associate with matching segments (optional)",
         )
         parser.add_argument(
-            'state_abbreviation',
-            type=str,
-            help='State abbreviation to categorize matching segments as'
-        )
-        parser.add_argument(
-            '--office-name',
-            type=str,
-            help='Office name to associate with matching segments (optional)'
-        )
-        parser.add_argument(
-            '--dry-run',
-            action='store_true',
-            help='Show what would be processed without actually saving to database'
+            "--dry-run",
+            action="store_true",
+            help="Show what would be processed without actually saving to database",
         )
 
         parser.add_argument(
-            '--no-input',
-            action='store_true',
-            help='Do not prompt for interactive input.',
+            "--no-input",
+            action="store_true",
+            help="Do not prompt for interactive input.",
         )
 
         parser.add_argument(
-            '--days-of-week',
+            "--days-of-week",
             type=str,
             help=(
-                'Comma-separated list of days to include. '
-                'Accepted: mon,tue,wed,thu,fri,sat,sun (case-insensitive). '
-                'Example: --days-of-week mon,tue,wed,thu,fri'
+                "Comma-separated list of days to include. "
+                "Accepted: mon,tue,wed,thu,fri,sat,sun (case-insensitive). "
+                "Example: --days-of-week mon,tue,wed,thu,fri"
             ),
         )
 
         parser.add_argument(
-            '--timezone',
+            "--timezone",
             type=str,
-            default='America/Los_Angeles',
-            help='IANA timezone name for date bucketing (e.g. America/Los_Angeles). DST-aware. (default: UTC)',
+            default="America/Los_Angeles",
+            help="IANA timezone name for date bucketing (e.g. America/Los_Angeles)."
+            " DST-aware. (default: America/Los_Angeles)",
         )
 
     def handle(self, *args, **options):
-        file_path = Path(options['file_path'])
-        place_id = options['place_id']
-        state_abbreviation = options['state_abbreviation']
-        office_name = options.get('office_name')
-        dry_run = options['dry_run']
-        tz_name = options['timezone']
-        no_input = options['no_input']
-        days_of_week = options.get('days_of_week')
+        file_path = Path(options["file_path"])
+        place_id = options["place_id"]
+        state_abbreviation = options["state_abbreviation"]
+        office_name = options.get("office_name")
+        dry_run = options["dry_run"]
+        tz_name = options["timezone"]
+        no_input = options["no_input"]
+        days_of_week = options.get("days_of_week")
 
         self.allowed_weekdays = self.parse_days_of_week(days_of_week)
-
-        if ZoneInfo is None:
-            raise CommandError("This Python does not support zoneinfo; please run on Python 3.9+ or install backports.zoneinfo")
 
         try:
             self.local_tz = ZoneInfo(tz_name)
         except ZoneInfoNotFoundError as e:
-            raise CommandError(f"Unknown timezone '{tz_name}'. Use an IANA name like 'America/Los_Angeles'.") from e
+            raise CommandError(
+                f"Unknown timezone '{tz_name}'. Use an IANA name like 'America/Los_Angeles'."
+            ) from e
 
         # Validate file exists
         if not file_path.exists():
@@ -105,7 +100,9 @@ class Command(BaseCommand):
                 if not dry_run:
                     # For now, we'll skip creating offices without coordinates
                     self.stdout.write(
-                        self.style.WARNING("Cannot create office without coordinates. Skipping office assignment.")
+                        self.style.WARNING(
+                            "Cannot create office without coordinates. Skipping office assignment."
+                        )
                     )
 
         if office and place_id:
@@ -124,9 +121,11 @@ class Command(BaseCommand):
 
         # Process segments
         matching_days = self.find_matching_segments(timeline_data, place_id)
-        
+
         if not matching_days:
-            self.stdout.write(self.style.WARNING("No matching segments found for the given placeId"))
+            self.stdout.write(
+                self.style.WARNING("No matching segments found for the given placeId")
+            )
             return
 
         self.stdout.write(f"Found {len(matching_days)} matching segments")
@@ -142,10 +141,10 @@ class Command(BaseCommand):
 
     def load_timeline_data(self, file_path):
         """Load timeline data from YAML or JSON file"""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            if file_path.suffix.lower() in ['.yaml', '.yml']:
+        with open(file_path, "r", encoding="utf-8") as f:
+            if file_path.suffix.lower() in [".yaml", ".yml"]:
                 return yaml.safe_load(f)
-            elif file_path.suffix.lower() == '.json':
+            elif file_path.suffix.lower() == ".json":
                 return json.load(f)
             else:
                 raise CommandError("Unsupported file format. Use .yaml, .yml, or .json")
@@ -157,10 +156,10 @@ class Command(BaseCommand):
         if isinstance(timeline_data, list):
             segments = timeline_data
         elif isinstance(timeline_data, dict):
-            segments = timeline_data.get('semanticSegments', [])
+            segments = timeline_data.get("semanticSegments", [])
         else:
             segments = []
-        
+
         for segment in segments:
             # Check if this segment contains the target placeId
             if self.segment_contains_place_id(segment, target_place_id):
@@ -169,39 +168,39 @@ class Command(BaseCommand):
                 if self.allowed_weekdays is not None:
                     dates = [d for d in dates if d.weekday() in self.allowed_weekdays]
                 matching_days.update(dates)
-        
+
         return sorted(matching_days)
 
     def segment_contains_place_id(self, segment, target_place_id):
         """Check if a segment contains the target placeId"""
         # Check in visit data
-        visit = segment.get('visit', {})
-        top_candidate = visit.get('topCandidate', {})
-        if top_candidate.get('placeId') == target_place_id:
+        visit = segment.get("visit", {})
+        top_candidate = visit.get("topCandidate", {})
+        if top_candidate.get("placeId") == target_place_id:
             return True
-        
+
         # Check in timelineMemory (destinations)
-        timeline_memory = segment.get('timelineMemory', {})
-        trip = timeline_memory.get('trip', {})
-        destinations = trip.get('destinations', [])
+        timeline_memory = segment.get("timelineMemory", {})
+        trip = timeline_memory.get("trip", {})
+        destinations = trip.get("destinations", [])
         for destination in destinations:
-            if destination.get('placeId') == target_place_id:
+            if destination.get("placeId") == target_place_id:
                 return True
-        
+
         return False
 
     def extract_dates_from_segment(self, segment):
         """Extract all dates covered by a segment"""
-        start_time = segment.get('startTime')
-        end_time = segment.get('endTime')
-        
+        start_time = segment.get("startTime")
+        end_time = segment.get("endTime")
+
         if not start_time or not end_time:
             return []
 
         try:
             # Parse ISO datetime strings
-            start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-            end_dt = datetime.fromisoformat(end_time.replace('Z', '+00:00'))
+            start_dt = datetime.fromisoformat(start_time.replace("Z", "+00:00"))
+            end_dt = datetime.fromisoformat(end_time.replace("Z", "+00:00"))
 
             # Normalize timezone (assume UTC if naive), then bucket by *local* date
             if start_dt.tzinfo is None:
@@ -225,9 +224,7 @@ class Command(BaseCommand):
             return dates
 
         except Exception as e:
-            self.stdout.write(
-                self.style.WARNING(f"Error parsing dates for segment: {e}")
-            )
+            self.stdout.write(self.style.WARNING(f"Error parsing dates for segment: {e}"))
             return []
 
     def parse_days_of_week(self, value):
@@ -235,26 +232,26 @@ class Command(BaseCommand):
             return None
 
         day_map = {
-            'mon': 0,
-            'monday': 0,
-            'tue': 1,
-            'tues': 1,
-            'tuesday': 1,
-            'wed': 2,
-            'wednesday': 2,
-            'thu': 3,
-            'thur': 3,
-            'thurs': 3,
-            'thursday': 3,
-            'fri': 4,
-            'friday': 4,
-            'sat': 5,
-            'saturday': 5,
-            'sun': 6,
-            'sunday': 6,
+            "mon": 0,
+            "monday": 0,
+            "tue": 1,
+            "tues": 1,
+            "tuesday": 1,
+            "wed": 2,
+            "wednesday": 2,
+            "thu": 3,
+            "thur": 3,
+            "thurs": 3,
+            "thursday": 3,
+            "fri": 4,
+            "friday": 4,
+            "sat": 5,
+            "saturday": 5,
+            "sun": 6,
+            "sunday": 6,
         }
 
-        parts = [p.strip().lower() for p in value.split(',') if p.strip()]
+        parts = [p.strip().lower() for p in value.split(",") if p.strip()]
         if not parts:
             raise CommandError("--days-of-week was provided but empty")
 
@@ -265,7 +262,7 @@ class Command(BaseCommand):
         return {day_map[p] for p in parts}
 
     def maybe_update_office_place_id(self, office, place_id, dry_run, no_input):
-        current = getattr(office, 'place_id', None)
+        current = getattr(office, "place_id", None)
         if current == place_id:
             return
 
@@ -273,7 +270,8 @@ class Command(BaseCommand):
             if current:
                 self.stdout.write(
                     self.style.WARNING(
-                        f"DRY RUN: Would update Office '{office.name}' place_id from '{current}' to '{place_id}'"
+                        f"DRY RUN: Would update Office '{office.name}' place_id "
+                        f"from '{current}' to '{place_id}'"
                     )
                 )
             else:
@@ -296,28 +294,30 @@ class Command(BaseCommand):
             prompt = f"Set Office '{office.name}' place_id to '{place_id}'? [y/N]: "
 
         answer = input(prompt).strip().lower()
-        if answer not in {'y', 'yes'}:
+        if answer not in {"y", "yes"}:
             return
 
         office.place_id = place_id
-        office.save(update_fields=['place_id'])
-        self.stdout.write(self.style.SUCCESS(f"Updated Office '{office.name}' place_id -> '{place_id}'"))
+        office.save(update_fields=["place_id"])
+        self.stdout.write(
+            self.style.SUCCESS(f"Updated Office '{office.name}' place_id -> '{place_id}'")
+        )
 
     @transaction.atomic
     def save_days_to_database(self, dates, state, office):
         """Save days to database with the specified state"""
         created_count = 0
         updated_count = 0
-        
+
         for date in dates:
             day, created = Day.objects.get_or_create(
                 date=date,
                 defaults={
-                    'day_type': Day.DayType.STANDARD_WORKDAY,
-                    'note': f'Added via timeline processing for placeId match'
-                }
+                    "day_type": Day.DayType.STANDARD_WORKDAY,
+                    "note": "Added via timeline processing for placeId match",
+                },
             )
-            
+
             if created:
                 day.states.add(state)
                 if office:
@@ -333,7 +333,7 @@ class Command(BaseCommand):
                     day.save()
                 updated_count += 1
                 self.stdout.write(f"Updated: {date} - {state.name}")
-        
+
         self.stdout.write(
             self.style.SUCCESS(
                 f"\nProcessing complete! Created: {created_count}, Updated: {updated_count}"
