@@ -1,31 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ settings.APP_FULL_NAME }}{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
 </head>
-<body class="bg-gray-50">
-    <nav class="bg-blue-600 text-white shadow-lg">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+    <nav class="bg-blue-600 dark:bg-gray-800 text-white shadow-lg transition-colors duration-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <div class="flex space-x-8">
-                    <a href="{% url 'year_view' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'year_view' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200">
                         Home
                     </a>
-                    <a href="{% url 'day_bulk_edit' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'day_bulk_edit' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200">
                         Bulk Edit Days
                     </a>
-                    <a href="{% url 'office_list' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'office_list' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200">
                         Offices
                     </a>
-                    <a href="{% url 'ratio_view_list' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'ratio_view_list' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200">
                         Ratio Views
                     </a>
-                    <a href="{% url 'admin:index' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700">
+                    <a href="{% url 'admin:index' %}" class="flex items-center px-3 py-2 rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-gray-700 transition-colors duration-200">
                         Admin
                     </a>
+                </div>
+                <!-- Dark mode toggle -->
+                <div class="flex items-center">
+                    <button id="dark-mode-toggle" class="relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-gray-500 bg-gray-200 dark:bg-gray-600">
+                        <span class="sr-only">Toggle dark mode</span>
+                        <span id="toggle-dot" class="inline-block w-4 h-4 transform transition-transform bg-white rounded-full translate-x-1 dark:translate-x-6"></span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -35,7 +47,7 @@
         {% if messages %}
             <div class="mb-4">
                 {% for message in messages %}
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-2" role="alert">
+                    <div class="bg-green-100 dark:bg-green-900 border border-green-400 dark:border-green-600 text-green-700 dark:text-green-300 px-4 py-3 rounded relative mb-2 transition-colors duration-200" role="alert">
                         <span class="block sm:inline">{{ message }}</span>
                     </div>
                 {% endfor %}
@@ -44,5 +56,32 @@
 
         {% block content %}{% endblock %}
     </main>
+
+    <script>
+        // Dark mode functionality
+        (function() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('dark-mode-toggle');
+            const toggleDot = document.getElementById('toggle-dot');
+            
+            // Check for saved theme preference or default to light mode
+            const currentTheme = localStorage.getItem('theme') || 'light';
+            
+            if (currentTheme === 'dark') {
+                html.classList.add('dark');
+            }
+            
+            // Toggle theme
+            toggle.addEventListener('click', function() {
+                if (html.classList.contains('dark')) {
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                } else {
+                    html.classList.add('dark');
+                    localStorage.setItem('theme', 'dark');
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
