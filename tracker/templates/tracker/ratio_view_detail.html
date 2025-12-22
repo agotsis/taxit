@@ -63,6 +63,120 @@
     </div>
 </div>
 
+<!-- Calendar View -->
+<div class="bg-white rounded-lg shadow overflow-hidden mb-8">
+    <div class="px-6 py-4 border-b border-gray-200">
+        <h2 class="text-xl font-semibold">Calendar View</h2>
+    </div>
+    <div class="p-6">
+        {% for month in calendar_months %}
+            <div class="mb-8">
+                <h3 class="text-lg font-medium mb-4">{{ month.month_name }}</h3>
+                <div class="grid grid-cols-7 gap-1">
+                    <!-- Day headers -->
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Sun</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Mon</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Tue</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Wed</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Thu</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Fri</div>
+                    <div class="text-center text-sm font-medium text-gray-500 py-2">Sat</div>
+                    
+                    <!-- Calendar days -->
+                    {% for week in month.weeks %}
+                        {% for day_info in week %}
+                            {% if day_info %}
+                                <div class="border rounded p-2 min-h-[80px] {% if not day_info.in_range %}bg-gray-50{% endif %} {% if day_info.in_range %}cursor-pointer hover:bg-gray-100{% endif %}"
+                                     {% if day_info.in_range %}onclick="openDayModal('{{ day_info.date|date:"Y-m-d" }}')"{% endif %}>
+                                    <div class="relative">
+                                        <div class="text-sm font-medium {% if not day_info.in_range %}text-gray-400{% else %}text-gray-900{% endif %}">
+                                            {{ day_info.date.day }}
+                                        </div>
+                                        {% if day_info.day and day_info.day.office %}
+                                            <div class="absolute top-0 right-0 text-xs text-gray-500">
+                                                {{ day_info.day.office.name|truncatechars:8 }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% if day_info.day %}
+                                        <div class="mt-1 space-y-1">
+                                            {% for state in day_info.day.states.all %}
+                                                <span class="inline-block px-1 py-0.5 text-xs rounded bg-blue-100 text-blue-800 w-full text-center truncate">
+                                                    {{ state.abbreviation }}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="border rounded p-2 min-h-[80px]"></div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Day Edit Modal -->
+<div id="dayModal" class="fixed inset-0 hidden overflow-y-auto h-full w-full z-50" style="background-color: rgba(0, 0, 0, 0.2);">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Edit Day - <span id="modalDate"></span></h3>
+            <form id="dayEditForm" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="modalDateInput" name="date">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Day Type</label>
+                    <select name="day_type" id="modalDayType" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        {% for choice in day_types %}
+                            <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">States</label>
+                    <div class="space-y-2 max-h-32 overflow-y-auto">
+                        {% for state in states %}
+                            <label class="flex items-center">
+                                <input type="checkbox" name="states" value="{{ state.id }}" class="mr-2">
+                                <span>{{ state.name }} ({{ state.abbreviation }})</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Office</label>
+                    <select name="office" id="modalOffice" class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">None</option>
+                        {% for office in offices %}
+                            <option value="{{ office.id }}">{{ office.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Note</label>
+                    <textarea name="note" id="modalNote" rows="3" class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeDayModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
         <h2 class="text-xl font-semibold">Days in Period</h2>
@@ -112,4 +226,80 @@
         </table>
     </div>
 </div>
+
+<script>
+function openDayModal(dateStr) {
+    document.getElementById('modalDate').textContent = dateStr;
+    document.getElementById('modalDateInput').value = dateStr;
+    document.getElementById('dayModal').classList.remove('hidden');
+    
+    // Load existing data for this date if available
+    fetch(`/tracker/day/${dateStr}/json/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data) {
+                document.getElementById('modalDayType').value = data.day_type || 'WORK';
+                document.getElementById('modalOffice').value = data.office_id || '';
+                document.getElementById('modalNote').value = data.note || '';
+                
+                // Clear all checkboxes first
+                document.querySelectorAll('input[name="states"]').forEach(cb => cb.checked = false);
+                
+                // Check the states for this day
+                if (data.states) {
+                    data.states.forEach(stateId => {
+                        const checkbox = document.querySelector(`input[name="states"][value="${stateId}"]`);
+                        if (checkbox) checkbox.checked = true;
+                    });
+                }
+            } else {
+                // Reset form for new day
+                document.getElementById('modalDayType').value = 'WORK';
+                document.getElementById('modalOffice').value = '';
+                document.getElementById('modalNote').value = '';
+                document.querySelectorAll('input[name="states"]').forEach(cb => cb.checked = false);
+            }
+        })
+        .catch(error => console.error('Error loading day data:', error));
+}
+
+function closeDayModal() {
+    document.getElementById('dayModal').classList.add('hidden');
+}
+
+// Handle form submission
+document.getElementById('dayEditForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const dateStr = formData.get('date');
+    
+    // Convert states checkboxes to array
+    const states = [];
+    document.querySelectorAll('input[name="states"]:checked').forEach(cb => {
+        states.push(cb.value);
+    });
+    formData.delete('states');
+    states.forEach(state => formData.append('states', state));
+    
+    fetch(`/tracker/day/${dateStr}/update/`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeDayModal();
+            // Reload the page to show updated data
+            window.location.reload();
+        } else {
+            alert('Error saving day: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error saving day:', error);
+        alert('Error saving day');
+    });
+});
+</script>
 {% endblock %}
