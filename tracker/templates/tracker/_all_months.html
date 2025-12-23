@@ -1,0 +1,73 @@
+<!-- All Months View -->
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-8 transition-colors duration-200">
+    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white">All Months View</h2>
+        <div class="flex items-center space-x-4">
+            {% if request.resolver_match.url_name == 'year_view' or request.resolver_match.url_name == 'year_month_view' or request.resolver_match.url_name == 'home' %}
+                <a href="{% url 'year_month_view' year=current_year month=current_month %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                    ← Show Single Month
+                </a>
+            {% else %}
+                <a href="{% url 'ratio_view_month_detail' pk=ratio_view.pk month=current_month year=current_year %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                    ← Show Single Month
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for month_data in all_months %}
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-colors duration-200 hover:shadow-lg">
+                    {% if request.resolver_match.url_name == 'year_view' or request.resolver_match.url_name == 'year_month_view' or request.resolver_match.url_name == 'home' %}
+                        <a href="{% url 'year_month_view' year=month_data.year month=month_data.month %}" class="block">
+                    {% else %}
+                        <a href="{% url 'ratio_view_month_detail' pk=ratio_view.pk month=month_data.month year=month_data.year %}" class="block">
+                    {% endif %}
+                            <div class="bg-gray-50 dark:bg-gray-700 px-4 py-3 border-b border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">
+                                    {{ month_data.month_name }}
+                                </h3>
+                            </div>
+                            <div class="p-3">
+                                <div class="grid grid-cols-7 gap-1 text-xs">
+                                    <!-- Day headers -->
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">M</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">T</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">W</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">T</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">F</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">S</div>
+                                    <div class="text-center font-medium text-gray-500 dark:text-gray-400 py-1">S</div>
+                                    
+                                    <!-- Calendar days -->
+                                    {% for week in month_data.weeks %}
+                                        {% for day_info in week %}
+                                            {% if day_info %}
+                                                <div class="border border-gray-200 dark:border-gray-600 rounded p-1 min-h-[40px] {% if not day_info.in_range %}bg-gray-50 dark:bg-gray-900{% endif %} {% if day_info.in_range %}bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700{% endif %} transition-colors duration-200"
+                                                     {% if day_info.in_range %}onclick="event.stopPropagation(); openDayModal('{{ day_info.date|date:'Y-m-d' }}')"{% endif %}>
+                                                    <div class="text-xs font-medium {% if not day_info.in_range %}text-gray-400 dark:text-gray-600{% else %}text-gray-900 dark:text-white{% endif %}">
+                                                        {{ day_info.date.day }}
+                                                    </div>
+                                                    {% if day_info.day and day_info.day.states.all %}
+                                                        <div class="mt-1 space-y-1">
+                                                            {% for state in day_info.day.states.all %}
+                                                                <span class="inline-block px-0.5 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 w-full text-center truncate">
+                                                                    {{ state.abbreviation }}
+                                                                </span>
+                                                            {% endfor %}
+                                                        </div>
+                                                    {% endif %}
+                                                </div>
+                                            {% else %}
+                                                <div class="border border-gray-200 dark:border-gray-600 rounded p-1 min-h-[40px] bg-gray-50 dark:bg-gray-900"></div>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

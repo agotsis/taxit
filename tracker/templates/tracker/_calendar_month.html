@@ -3,10 +3,25 @@
     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Calendar View</h2>
         <div class="flex items-center space-x-4">
-            {% if has_prev %}
-                <a href="?month={{ prev_month }}&year={{ prev_year }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                    ← Previous
+            {% if request.resolver_match.url_name == 'year_view' or request.resolver_match.url_name == 'year_month_view' or request.resolver_match.url_name == 'home' %}
+                <a href="{% url 'year_view' year=current_year %}?all=true" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200">
+                    Show All Months
                 </a>
+            {% else %}
+                <a href="{% url 'ratio_view_detail' pk=ratio_view.pk %}?all=true" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200">
+                    Show All Months
+                </a>
+            {% endif %}
+            {% if has_prev %}
+                {% if request.resolver_match.url_name == 'year_view' or request.resolver_match.url_name == 'year_month_view' or request.resolver_match.url_name == 'home' %}
+                    <a href="{% url 'year_month_view' year=prev_year month=prev_month %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        ← Previous
+                    </a>
+                {% else %}
+                    <a href="{% url 'ratio_view_month_detail' pk=ratio_view.pk month=prev_month year=prev_year %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        ← Previous
+                    </a>
+                {% endif %}
             {% else %}
                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded cursor-not-allowed">
                     ← Previous
@@ -14,9 +29,15 @@
             {% endif %}
             <span class="font-medium text-gray-900 dark:text-white">{{ calendar_month.month_name }}</span>
             {% if has_next %}
-                <a href="?month={{ next_month }}&year={{ next_year }}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                    Next →
-                </a>
+                {% if request.resolver_match.url_name == 'year_view' or request.resolver_match.url_name == 'year_month_view' or request.resolver_match.url_name == 'home' %}
+                    <a href="{% url 'year_month_view' year=next_year month=next_month %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        Next →
+                    </a>
+                {% else %}
+                    <a href="{% url 'ratio_view_month_detail' pk=ratio_view.pk month=next_month year=next_year %}" class="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        Next →
+                    </a>
+                {% endif %}
             {% else %}
                 <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded cursor-not-allowed">
                     Next →

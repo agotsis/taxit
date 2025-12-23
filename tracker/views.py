@@ -49,21 +49,20 @@ def generate_calendar_month(year, month, start_date=None, end_date=None):
     return month_data
 
 
-def year_view(request, year=None):
-    """Display days and state counts for a specific year."""
+def year_view(request, year=None, month=None):
+    """Show calendar for a specific year with state statistics."""
     if year is None:
         year = datetime.now().year
-
-    month = request.GET.get("month")
-    if month:
-        try:
-            month = int(month)
-            if month < 1 or month > 12:
-                month = datetime.now().month
-        except ValueError:
-            month = datetime.now().month
     else:
+        year = int(year)
+
+    # Check if we should show all months
+    show_all = request.GET.get("all", "false").lower() == "true"
+
+    if month is None:
         month = datetime.now().month
+    else:
+        month = int(month)
 
     start_date = date(year, 1, 1)
     end_date = date(year, 12, 31)
@@ -85,7 +84,17 @@ def year_view(request, year=None):
                 ),
             }
 
-    calendar_month = generate_calendar_month(year, month)
+    if show_all:
+        # Generate all months for the year
+        all_months = []
+        for month_num in range(1, 13):
+            calendar_month = generate_calendar_month(year, month_num)
+            all_months.append(calendar_month)
+        calendar_month = None  # We won't use single month display
+    else:
+        # Generate calendar for current month only
+        calendar_month = generate_calendar_month(year, month)
+        all_months = []
 
     # Calculate prev/next month
     if month == 1:
@@ -108,11 +117,16 @@ def year_view(request, year=None):
         "state_counts": state_counts,
         "states": states,
         "calendar_month": calendar_month,
+        "all_months": all_months,
+        "show_all": show_all,
         "current_month": month,
+        "current_year": year,
         "prev_month": prev_month,
         "prev_year": prev_year,
         "next_month": next_month,
         "next_year": next_year,
+        "has_prev": True,  # Always allow navigation to previous year
+        "has_next": True,  # Always allow navigation to next year
         "day_types": Day.DayType.choices,
         "offices": Office.objects.all(),
         "settings": settings,
@@ -192,26 +206,19 @@ def ratio_view_list(request):
     return render(request, "tracker/ratio_view_list.html", context)
 
 
-def ratio_view_detail(request, pk):
+def ratio_view_detail(request, pk, month=None, year=None):
     """Show detailed analysis for a specific ratio view."""
     ratio_view = get_object_or_404(RatioView, pk=pk)
 
-    month_param = request.GET.get("month")
-    year_param = request.GET.get("year")
+    # Check if we should show all months
+    show_all = request.GET.get("all", "false").lower() == "true"
 
-    if month_param and year_param:
-        try:
-            month = int(month_param)
-            year = int(year_param)
-            if month < 1 or month > 12:
-                month = ratio_view.start_date.month
-                year = ratio_view.start_date.year
-        except ValueError:
-            month = ratio_view.start_date.month
-            year = ratio_view.start_date.year
-    else:
+    if month is None or year is None:
         month = ratio_view.start_date.month
         year = ratio_view.start_date.year
+    else:
+        month = int(month)
+        year = int(year)
 
     days = Day.objects.filter(
         date__range=[ratio_view.start_date, ratio_view.end_date]
@@ -236,10 +243,31 @@ def ratio_view_detail(request, pk):
                 ),
             }
 
-    # Generate calendar for current month
-    calendar_month = generate_calendar_month(
-        year, month, ratio_view.start_date, ratio_view.end_date
-    )
+    if show_all:
+        # Generate all months within the ratio view date range
+        all_months = []
+        current_date = date(ratio_view.start_date.year, ratio_view.start_date.month, 1)
+        end_date = date(ratio_view.end_date.year, ratio_view.end_date.month, 1)
+
+        while current_date <= end_date:
+            calendar_month = generate_calendar_month(
+                current_date.year, current_date.month, ratio_view.start_date, ratio_view.end_date
+            )
+            all_months.append(calendar_month)
+
+            # Move to next month
+            if current_date.month == 12:
+                current_date = date(current_date.year + 1, 1, 1)
+            else:
+                current_date = date(current_date.year, current_date.month + 1, 1)
+
+        calendar_month = None  # We won't use single month display
+    else:
+        # Generate calendar for current month only
+        calendar_month = generate_calendar_month(
+            year, month, ratio_view.start_date, ratio_view.end_date
+        )
+        all_months = []
 
     # Calculate prev/next month within the ratio view range
     if month == 1:
@@ -270,6 +298,8 @@ def ratio_view_detail(request, pk):
         "total_days": total_workdays_logged,  # Use actual workdays logged
         "total_workdays_logged": total_workdays_logged,
         "calendar_month": calendar_month,
+        "all_months": all_months,
+        "show_all": show_all,
         "current_month": month,
         "current_year": year,
         "prev_month": prev_month,

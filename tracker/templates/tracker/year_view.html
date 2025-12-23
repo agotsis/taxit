@@ -29,8 +29,8 @@
                                 <span class="font-medium text-gray-900 dark:text-white">{{ state.name }} ({{ state.abbreviation }})</span>
                                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ data.count }} / {{ data.threshold }} days</span>
                             </div>
-                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ data.percentage|floatformat:0 }}%"></div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: min({{ data.percentage|floatformat:0 }}%, 100%)"></div>
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ data.percentage|floatformat:1 }}% of threshold</div>
                         </div>
@@ -60,7 +60,11 @@
     </div>
 </div>
 
-{% include 'tracker/_calendar_month.html' %}
+{% if show_all %}
+    {% include 'tracker/_all_months.html' %}
+{% else %}
+    {% include 'tracker/_calendar_month.html' %}
+{% endif %}
 
 <!-- Day Edit Modal -->
 <div id="dayModal" class="fixed inset-0 hidden overflow-y-auto h-full w-full z-50" style="background-color: rgba(0, 0, 0, 0.2);">
@@ -181,7 +185,7 @@ function openDayModal(dateStr) {
     document.getElementById('dayModal').classList.remove('hidden');
     
     // Load existing data for this date if available
-    fetch(`/tracker/day/${dateStr}/json/`)
+    fetch(`/day/${dateStr}/json/`)
         .then(response => response.json())
         .then(data => {
             if (data) {
@@ -229,7 +233,7 @@ document.getElementById('dayEditForm').addEventListener('submit', function(e) {
     formData.delete('states');
     states.forEach(state => formData.append('states', state));
     
-    fetch(`/tracker/day/${dateStr}/update/`, {
+    fetch(`/day/${dateStr}/update/`, {
         method: 'POST',
         body: formData
     })
