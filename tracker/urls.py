@@ -16,4 +16,5 @@ urlpatterns = [
     ),
     path("day/<str:date_str>/json/", views.day_json, name="day_json"),
     path("day/<str:date_str>/update/", views.day_update, name="day_update"),
+    path("day/<str:date_str>/delete/", views.day_delete, name="day_delete"),
 ]

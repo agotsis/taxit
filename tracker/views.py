@@ -350,6 +350,15 @@ def day_update(request, date_str):
     """Update day data via POST."""
     try:
         day_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+        # Validate that at least one state is selected
+        state_ids = request.POST.getlist("states")
+        if not state_ids:
+            return JsonResponse(
+                {"success": False, "error": "At least one state must be selected"},
+                status=400,
+            )
+
         day, created = Day.objects.get_or_create(date=day_date)
 
         # Update day type
@@ -365,10 +374,30 @@ def day_update(request, date_str):
         day.save()
 
         # Update states
-        state_ids = request.POST.getlist("states")
         day.states.set(state_ids)
 
         return JsonResponse({"success": True})
+    except ValueError as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=400)
+    except Exception as e:
+        return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+@require_http_methods(["POST"])
+def day_delete(request, date_str):
+    """Delete a day via POST."""
+    try:
+        day_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        day = Day.objects.filter(date=day_date).first()
+
+        if day:
+            day.delete()
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse(
+                {"success": False, "error": "Day not found"},
+                status=404,
+            )
     except ValueError as e:
         return JsonResponse({"success": False, "error": str(e)}, status=400)
     except Exception as e:
