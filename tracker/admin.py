@@ -4,7 +4,8 @@ from .models import State, Office, Day, RatioView
 
 @admin.register(State)
 class StateAdmin(admin.ModelAdmin):
-    list_display = ["name", "abbreviation", "day_threshold"]
+    list_display = ["name", "abbreviation", "day_threshold", "is_active"]
+    list_filter = ["is_active"]
     search_fields = ["name", "abbreviation"]
     ordering = ["name"]
 

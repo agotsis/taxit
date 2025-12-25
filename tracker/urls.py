@@ -7,6 +7,8 @@ urlpatterns = [
     path("year/<int:year>/month/<int:month>/", views.year_view, name="year_month_view"),
     path("bulk-edit/", views.day_bulk_edit, name="day_bulk_edit"),
     path("offices/", views.office_list, name="office_list"),
+    path("states/", views.state_list, name="state_list"),
+    path("states/<str:abbreviation>/toggle/", views.state_toggle, name="state_toggle"),
     path("ratio-views/", views.ratio_view_list, name="ratio_view_list"),
     path("ratio-views/<int:pk>/", views.ratio_view_detail, name="ratio_view_detail"),
     path(

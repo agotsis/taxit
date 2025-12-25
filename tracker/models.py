@@ -1,6 +1,11 @@
 from django.db import models
 
 
+class StateManager(models.Manager):
+    def get_by_natural_key(self, abbreviation):
+        return self.get(abbreviation=abbreviation)
+
+
 class State(models.Model):
     """A US state with tax residency day threshold."""
 
@@ -9,9 +14,17 @@ class State(models.Model):
     day_threshold = models.PositiveIntegerField(
         help_text="Number of days before tax residency is triggered"
     )
+    is_active = models.BooleanField(
+        default=False, help_text="Whether this state is actively tracked by the user"
+    )
+
+    objects = StateManager()
 
     class Meta:
         ordering = ["name"]
+
+    def natural_key(self):
+        return (self.abbreviation,)
 
     def __str__(self):
         return f"{self.name} ({self.abbreviation})"

@@ -71,7 +71,7 @@ def year_view(request, year=None, month=None):
         "states", "office"
     )
 
-    states = State.objects.all()
+    states = State.objects.filter(is_active=True)
     state_counts = {}
     for state in states:
         count = days.filter(states=state).count()
@@ -169,7 +169,7 @@ def day_bulk_edit(request):
             messages.success(request, f"Updated {days_updated} days")
             return redirect("year_view", year=start.year)
 
-    states = State.objects.all()
+    states = State.objects.filter(is_active=True)
     offices = Office.objects.all()
     day_types = Day.DayType.choices
     weekday_choices = [
@@ -227,7 +227,7 @@ def ratio_view_detail(request, pk, month=None, year=None):
     # Total workdays with any state logged in the period
     total_workdays_logged = days.filter(states__isnull=False).distinct().count()
 
-    states = State.objects.all()
+    states = State.objects.filter(is_active=True)
     state_counts = {}
     for state in states:
         count = days.filter(states=state).count()
@@ -309,7 +309,7 @@ def ratio_view_detail(request, pk, month=None, year=None):
         "has_prev": has_prev,
         "has_next": has_next,
         "day_types": Day.DayType.choices,
-        "states": State.objects.all(),
+        "states": State.objects.filter(is_active=True),
         "offices": Office.objects.all(),
         "settings": settings,
     }
@@ -402,3 +402,22 @@ def day_delete(request, date_str):
         return JsonResponse({"success": False, "error": str(e)}, status=400)
     except Exception as e:
         return JsonResponse({"success": False, "error": str(e)}, status=500)
+
+
+def state_list(request):
+    """List all states with ability to activate/deactivate them."""
+    states = State.objects.all().order_by("name")
+    context = {"states": states, "settings": settings}
+    return render(request, "tracker/state_list.html", context)
+
+
+@require_http_methods(["POST"])
+def state_toggle(request, abbreviation):
+    """Toggle the is_active status of a state."""
+    state = get_object_or_404(State, abbreviation=abbreviation)
+    state.is_active = not state.is_active
+    state.save()
+
+    status = "activated" if state.is_active else "deactivated"
+    messages.success(request, f"{state.name} has been {status}")
+    return redirect("state_list")

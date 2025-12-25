@@ -86,14 +86,20 @@
                 
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">States</label>
-                    <div class="space-y-2 max-h-32 overflow-y-auto">
-                        {% for state in states %}
-                            <label class="flex items-center text-gray-900 dark:text-white">
-                                <input type="checkbox" name="states" value="{{ state.id }}" class="mr-2">
-                                <span>{{ state.name }} ({{ state.abbreviation }})</span>
-                            </label>
-                        {% endfor %}
-                    </div>
+                    {% if states %}
+                        <div class="space-y-2 max-h-32 overflow-y-auto">
+                            {% for state in states %}
+                                <label class="flex items-center text-gray-900 dark:text-white">
+                                    <input type="checkbox" name="states" value="{{ state.id }}" class="mr-2">
+                                    <span>{{ state.name }} ({{ state.abbreviation }})</span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded text-sm text-yellow-800 dark:text-yellow-200">
+                            No active states available. <a href="{% url 'state_list' %}" class="underline font-medium">Activate states</a> to track days.
+                        </div>
+                    {% endif %}
                 </div>
                 
                 <div class="mb-4">

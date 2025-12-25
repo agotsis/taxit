@@ -1,0 +1,349 @@
+- model: tracker.state
+  fields:
+    name: Alabama
+    abbreviation: AL
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Alaska
+    abbreviation: AK
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Arizona
+    abbreviation: AZ
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Arkansas
+    abbreviation: AR
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: California
+    abbreviation: CA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Colorado
+    abbreviation: CO
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Connecticut
+    abbreviation: CT
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Delaware
+    abbreviation: DE
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Florida
+    abbreviation: FL
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Georgia
+    abbreviation: GA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Hawaii
+    abbreviation: HI
+    day_threshold: 200
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Idaho
+    abbreviation: ID
+    day_threshold: 270
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Illinois
+    abbreviation: IL
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Indiana
+    abbreviation: IN
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Iowa
+    abbreviation: IA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Kansas
+    abbreviation: KS
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Kentucky
+    abbreviation: KY
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Louisiana
+    abbreviation: LA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Maine
+    abbreviation: ME
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Maryland
+    abbreviation: MD
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Massachusetts
+    abbreviation: MA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Michigan
+    abbreviation: MI
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Minnesota
+    abbreviation: MN
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Mississippi
+    abbreviation: MS
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Missouri
+    abbreviation: MO
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Montana
+    abbreviation: MT
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Nebraska
+    abbreviation: NE
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Nevada
+    abbreviation: NV
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: New Hampshire
+    abbreviation: NH
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: New Jersey
+    abbreviation: NJ
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: New Mexico
+    abbreviation: NM
+    day_threshold: 185
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: New York
+    abbreviation: NY
+    day_threshold: 184
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: North Carolina
+    abbreviation: NC
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: North Dakota
+    abbreviation: ND
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Ohio
+    abbreviation: OH
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Oklahoma
+    abbreviation: OK
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Oregon
+    abbreviation: OR
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Pennsylvania
+    abbreviation: PA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Rhode Island
+    abbreviation: RI
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: South Carolina
+    abbreviation: SC
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: South Dakota
+    abbreviation: SD
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Tennessee
+    abbreviation: TN
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Texas
+    abbreviation: TX
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Utah
+    abbreviation: UT
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Vermont
+    abbreviation: VT
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Virginia
+    abbreviation: VA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Washington
+    abbreviation: WA
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: West Virginia
+    abbreviation: WV
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Wisconsin
+    abbreviation: WI
+    day_threshold: 183
+    is_active: false
+
+- model: tracker.state
+  fields:
+    name: Wyoming
+    abbreviation: WY
+    day_threshold: 183
+    is_active: false

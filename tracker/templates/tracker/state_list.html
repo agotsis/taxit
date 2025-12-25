@@ -1,0 +1,128 @@
+{% extends 'tracker/base.html' %}
+
+{% block title %}Manage States - {{ settings.APP_NAME }}{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Manage States</h1>
+        <a href="{% url 'admin:tracker_state_changelist' %}" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors duration-200">
+            Advanced Admin →
+        </a>
+    </div>
+    <p class="mt-2 text-gray-600 dark:text-gray-400">
+        Activate the states you want to track. Only active states will appear in day entry forms and statistics.
+    </p>
+</div>
+
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow transition-colors duration-200">
+    <div class="p-6">
+        <div class="mb-4 flex space-x-4">
+            <button id="show-all-btn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
+                Show All States
+            </button>
+            <button id="show-active-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                Show Active Only
+            </button>
+            <button id="show-inactive-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                Show Inactive Only
+            </button>
+        </div>
+
+        {% if states %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for state in states %}
+                <div class="state-card border border-gray-200 dark:border-gray-700 rounded-lg p-4 transition-colors duration-200 {% if state.is_active %}bg-green-50 dark:bg-green-900/20{% else %}bg-gray-50 dark:bg-gray-900/50{% endif %}" data-active="{{ state.is_active|yesno:'true,false' }}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-semibold text-gray-900 dark:text-white">{{ state.name }}</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">{{ state.abbreviation }}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded {% if state.is_active %}bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200{% else %}bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400{% endif %}">
+                            {% if state.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                        Threshold: {{ state.day_threshold }} days
+                    </div>
+                    <form method="post" action="{% url 'state_toggle' state.abbreviation %}" class="inline">
+                        {% csrf_token %}
+                        {% if state.is_active %}
+                            <button type="submit" class="w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 transition-colors duration-200">
+                                Deactivate
+                            </button>
+                        {% else %}
+                            <button type="submit" class="w-full px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors duration-200">
+                                Activate
+                            </button>
+                        {% endif %}
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="mb-4">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                    </svg>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No States Available</h3>
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    Load the state fixtures to get started with tracking.
+                </p>
+                <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 max-w-md mx-auto text-left">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">Run this command:</p>
+                    <code class="block bg-gray-800 text-green-400 p-3 rounded text-sm">python manage.py load_states</code>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function() {
+    const showAllBtn = document.getElementById('show-all-btn');
+    const showActiveBtn = document.getElementById('show-active-btn');
+    const showInactiveBtn = document.getElementById('show-inactive-btn');
+    const stateCards = document.querySelectorAll('.state-card');
+
+    function setActiveButton(btn) {
+        [showAllBtn, showActiveBtn, showInactiveBtn].forEach(b => {
+            b.classList.remove('bg-blue-600', 'text-white');
+            b.classList.add('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        });
+        btn.classList.remove('bg-gray-200', 'dark:bg-gray-700', 'text-gray-700', 'dark:text-gray-300');
+        btn.classList.add('bg-blue-600', 'text-white');
+    }
+
+    function filterStates(filter) {
+        stateCards.forEach(card => {
+            const isActive = card.dataset.active === 'true';
+            if (filter === 'all') {
+                card.style.display = '';
+            } else if (filter === 'active') {
+                card.style.display = isActive ? '' : 'none';
+            } else if (filter === 'inactive') {
+                card.style.display = isActive ? 'none' : '';
+            }
+        });
+    }
+
+    showAllBtn.addEventListener('click', function() {
+        setActiveButton(showAllBtn);
+        filterStates('all');
+    });
+
+    showActiveBtn.addEventListener('click', function() {
+        setActiveButton(showActiveBtn);
+        filterStates('active');
+    });
+
+    showInactiveBtn.addEventListener('click', function() {
+        setActiveButton(showInactiveBtn);
+        filterStates('inactive');
+    });
+})();
+</script>
+{% endblock %}
