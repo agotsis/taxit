@@ -9,7 +9,7 @@
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ ratio_view.name }}</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
                 {{ ratio_view.start_date|date:"M d, Y" }} - {{ ratio_view.end_date|date:"M d, Y" }} 
-                ({{ total_days }} days with states)
+                ({{ total_days }} workdays)
             </p>
         </div>
         <a href="{% url 'ratio_view_list' %}" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
@@ -48,7 +48,7 @@
         <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Summary</h2>
         <div class="space-y-3">
             <div class="flex justify-between">
-                <span class="text-gray-600 dark:text-gray-400">Total Days with States:</span>
+                <span class="text-gray-600 dark:text-gray-400">Total Workdays:</span>
                 <span class="font-semibold text-gray-900 dark:text-white">{{ total_days }}</span>
             </div>
             <div class="flex justify-between">
