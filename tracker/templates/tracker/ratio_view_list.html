@@ -14,24 +14,39 @@
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% for ratio_view in ratio_views %}
+    {% for item in ratio_views_with_stats %}
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition-shadow transition-colors duration-200">
             <div class="p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ ratio_view.name }}</h3>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ item.ratio_view.name }}</h3>
                 <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1 mb-4">
-                    <p><span class="font-medium text-gray-900 dark:text-white">Start:</span> {{ ratio_view.start_date|date:"M d, Y" }}</p>
-                    <p><span class="font-medium text-gray-900 dark:text-white">End:</span> {{ ratio_view.end_date|date:"M d, Y" }}</p>
-                    <p><span class="font-medium text-gray-900 dark:text-white">Duration:</span> {{ ratio_view.days_in_range }} days ({{ ratio_view.workdays_in_range }} workdays)</p>
+                    <p><span class="font-medium text-gray-900 dark:text-white">Start:</span> {{ item.ratio_view.start_date|date:"M d, Y" }}</p>
+                    <p><span class="font-medium text-gray-900 dark:text-white">End:</span> {{ item.ratio_view.end_date|date:"M d, Y" }}</p>
+                    <p><span class="font-medium text-gray-900 dark:text-white">Duration:</span> {{ item.ratio_view.days_in_range }} days ({{ item.ratio_view.workdays_in_range }} workdays)</p>
                 </div>
-                {% if ratio_view.description %}
-                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ ratio_view.description|truncatewords:20 }}</p>
+                {% if item.highest_state %}
+                    <div class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-xs font-medium text-blue-900 dark:text-blue-200">Highest State</span>
+                            <span class="text-xs text-blue-700 dark:text-blue-300">{{ item.highest_state.count }} / {{ item.highest_state.total_workdays }} workdays</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-blue-900 dark:text-blue-100">{{ item.highest_state.state.name }}</span>
+                            <span class="text-sm font-bold text-blue-700 dark:text-blue-300">{{ item.highest_state.percentage|floatformat:1 }}%</span>
+                        </div>
+                        <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-1.5 mt-2">
+                            <div class="bg-blue-600 dark:bg-blue-400 h-1.5 rounded-full" style="width: {{ item.highest_state.percentage|floatformat:0 }}%"></div>
+                        </div>
+                    </div>
+                {% endif %}
+                {% if item.ratio_view.description %}
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">{{ item.ratio_view.description|truncatewords:20 }}</p>
                 {% endif %}
                 <div class="flex space-x-2">
-                    <a href="{% url 'ratio_view_detail' ratio_view.pk %}" 
+                    <a href="{% url 'ratio_view_detail' item.ratio_view.pk %}" 
                        class="flex-1 px-4 py-2 bg-blue-600 text-white text-center rounded hover:bg-blue-700 text-sm transition-colors duration-200">
                         View Analysis
                     </a>
-                    <a href="{% url 'admin:tracker_ratioview_change' ratio_view.id %}" 
+                    <a href="{% url 'admin:tracker_ratioview_change' item.ratio_view.id %}" 
                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm transition-colors duration-200">
                         Edit
                     </a>

@@ -200,9 +200,47 @@ def office_list(request):
 
 
 def ratio_view_list(request):
-    """List all ratio views."""
+    """List all ratio views with highest percentage state for each."""
     ratio_views = RatioView.objects.all()
-    context = {"ratio_views": ratio_views, "settings": settings}
+
+    # Calculate highest percentage state for each ratio view
+    ratio_views_with_stats = []
+    for ratio_view in ratio_views:
+        days = Day.objects.filter(
+            date__range=[ratio_view.start_date, ratio_view.end_date]
+        ).prefetch_related("states")
+
+        # Total workdays with any state logged in the period
+        total_workdays_logged = days.filter(states__isnull=False).distinct().count()
+
+        active_states = State.objects.filter(is_active=True)
+        highest_state = None
+        highest_percentage = 0
+
+        for state in active_states:
+            count = days.filter(states=state).count()
+            if count > 0 and total_workdays_logged > 0:
+                percentage = (count / total_workdays_logged) * 100
+                if percentage > highest_percentage:
+                    highest_percentage = percentage
+                    highest_state = {
+                        "state": state,
+                        "count": count,
+                        "percentage": percentage,
+                        "total_workdays": total_workdays_logged,
+                    }
+
+        ratio_views_with_stats.append(
+            {
+                "ratio_view": ratio_view,
+                "highest_state": highest_state,
+            }
+        )
+
+    context = {
+        "ratio_views_with_stats": ratio_views_with_stats,
+        "settings": settings,
+    }
     return render(request, "tracker/ratio_view_list.html", context)
 
 
