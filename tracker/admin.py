@@ -39,7 +39,8 @@ class DayAdmin(admin.ModelAdmin):
 
 @admin.register(RatioView)
 class RatioViewAdmin(admin.ModelAdmin):
-    list_display = ["name", "start_date", "end_date", "days_in_range", "created_at"]
+    list_display = ["name", "start_date", "end_date", "hidden", "days_in_range", "created_at"]
+    list_filter = ["hidden"]
     search_fields = ["name", "description"]
     ordering = ["start_date", "end_date"]
     actions = ["make_copy"]

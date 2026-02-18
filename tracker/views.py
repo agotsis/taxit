@@ -202,7 +202,13 @@ def office_list(request):
 
 def ratio_view_list(request):
     """List all ratio views with highest percentage state for each."""
-    ratio_views = RatioView.objects.all().order_by("start_date", "end_date")
+    # Check if we should show hidden ratio views
+    show_hidden = request.GET.get("show_hidden", "false").lower() == "true"
+
+    if show_hidden:
+        ratio_views = RatioView.objects.all().order_by("start_date", "end_date")
+    else:
+        ratio_views = RatioView.objects.filter(hidden=False).order_by("start_date", "end_date")
 
     # Calculate highest percentage state for each ratio view
     ratio_views_with_stats = []
@@ -240,6 +246,7 @@ def ratio_view_list(request):
 
     context = {
         "ratio_views_with_stats": ratio_views_with_stats,
+        "show_hidden": show_hidden,
         "settings": settings,
     }
     return render(request, "tracker/ratio_view_list.html", context)
@@ -463,6 +470,18 @@ def state_list(request):
     states = State.objects.all().order_by("name")
     context = {"states": states, "settings": settings}
     return render(request, "tracker/state_list.html", context)
+
+
+@require_http_methods(["POST"])
+def ratio_view_toggle_hidden(request, pk):
+    """Toggle the hidden status of a ratio view."""
+    ratio_view = get_object_or_404(RatioView, pk=pk)
+    ratio_view.hidden = not ratio_view.hidden
+    ratio_view.save()
+
+    status = "hidden" if ratio_view.hidden else "unhidden"
+    messages.success(request, f"{ratio_view.name} has been {status}")
+    return redirect("ratio_view_list")
 
 
 @require_http_methods(["POST"])

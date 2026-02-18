@@ -10,6 +10,11 @@ urlpatterns = [
     path("states/", views.state_list, name="state_list"),
     path("states/<str:abbreviation>/toggle/", views.state_toggle, name="state_toggle"),
     path("ratio-views/", views.ratio_view_list, name="ratio_view_list"),
+    path(
+        "ratio-views/<int:pk>/toggle-hidden/",
+        views.ratio_view_toggle_hidden,
+        name="ratio_view_toggle_hidden",
+    ),
     path("ratio-views/<int:pk>/", views.ratio_view_detail, name="ratio_view_detail"),
     path(
         "ratio-views/<int:pk>/copy/",

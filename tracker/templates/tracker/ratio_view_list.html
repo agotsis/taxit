@@ -6,9 +6,20 @@
 <div class="mb-6">
     <div class="flex justify-between items-center">
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Ratio Views</h1>
-        <a href="{% url 'admin:tracker_ratioview_add' %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
-            Create Ratio View
-        </a>
+        <div class="flex space-x-2">
+            {% if show_hidden %}
+                <a href="{% url 'ratio_view_list' %}" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                    Hide Hidden
+                </a>
+            {% else %}
+                <a href="?show_hidden=true" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
+                    Show Hidden
+                </a>
+            {% endif %}
+            <a href="{% url 'admin:tracker_ratioview_add' %}" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
+                Create Ratio View
+            </a>
+        </div>
     </div>
     <p class="text-gray-600 dark:text-gray-400 mt-2">Analyze state day ratios over custom date ranges for vesting periods or year counts</p>
 </div>
@@ -46,6 +57,12 @@
                        class="flex-1 px-4 py-2 bg-blue-600 text-white text-center rounded hover:bg-blue-700 text-sm transition-colors duration-200">
                         View Analysis
                     </a>
+                    <form method="post" action="{% url 'ratio_view_toggle_hidden' item.ratio_view.pk %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm transition-colors duration-200">
+                            {% if item.ratio_view.hidden %}Unhide{% else %}Hide{% endif %}
+                        </button>
+                    </form>
                     <a href="{% url 'admin:tracker_ratioview_change' item.ratio_view.id %}" 
                        class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 text-sm transition-colors duration-200">
                         Edit
