@@ -41,4 +41,23 @@ class DayAdmin(admin.ModelAdmin):
 class RatioViewAdmin(admin.ModelAdmin):
     list_display = ["name", "start_date", "end_date", "days_in_range", "created_at"]
     search_fields = ["name", "description"]
-    ordering = ["-created_at"]
+    ordering = ["start_date", "end_date"]
+    actions = ["make_copy"]
+    change_form_template = "admin/tracker/ratioview/change_form.html"
+
+    @admin.action(description="Make a copy of selected ratio views")
+    def make_copy(self, request, queryset):
+        copied_count = 0
+        for ratio_view in queryset:
+            ratio_view.pk = None
+            ratio_view.id = None
+            ratio_view.name = f"{ratio_view.name} (Copy)"
+            ratio_view.save()
+            copied_count += 1
+
+        self.message_user(
+            request,
+            f"Successfully created {copied_count} copy/copies.",
+        )
+
+    make_copy.short_description = "Make a copy of selected ratio views"

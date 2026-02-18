@@ -12,6 +12,11 @@ urlpatterns = [
     path("ratio-views/", views.ratio_view_list, name="ratio_view_list"),
     path("ratio-views/<int:pk>/", views.ratio_view_detail, name="ratio_view_detail"),
     path(
+        "ratio-views/<int:pk>/copy/",
+        views.ratio_view_copy,
+        name="ratio_view_copy",
+    ),
+    path(
         "ratio-views/<int:pk>/month/<int:month>/year/<int:year>/",
         views.ratio_view_detail,
         name="ratio_view_month_detail",

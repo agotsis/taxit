@@ -1,0 +1,20 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+    {% if original %}
+        <li>
+            <a href="{% url 'ratio_view_detail' original.pk %}" class="viewsitelink" target="_blank">
+                View on site
+            </a>
+        </li>
+        <li>
+            <form method="post" action="{% url 'ratio_view_copy' original.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="button" style="cursor:pointer; background:none; border:none; padding:0; font-size:inherit; color:inherit; text-decoration:underline;">
+                    Make a copy
+                </button>
+            </form>
+        </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

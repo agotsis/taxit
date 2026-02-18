@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.conf import settings
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 from datetime import datetime, date, timedelta
 import calendar
@@ -201,7 +202,7 @@ def office_list(request):
 
 def ratio_view_list(request):
     """List all ratio views with highest percentage state for each."""
-    ratio_views = RatioView.objects.all()
+    ratio_views = RatioView.objects.all().order_by("start_date", "end_date")
 
     # Calculate highest percentage state for each ratio view
     ratio_views_with_stats = []
@@ -352,6 +353,21 @@ def ratio_view_detail(request, pk, month=None, year=None):
         "settings": settings,
     }
     return render(request, "tracker/ratio_view_detail.html", context)
+
+
+@require_http_methods(["POST"])
+def ratio_view_copy(request, pk):
+    ratio_view = get_object_or_404(RatioView, pk=pk)
+
+    copied = RatioView.objects.create(
+        name=f"{ratio_view.name} (Copy)",
+        start_date=ratio_view.start_date,
+        end_date=ratio_view.end_date,
+        description=ratio_view.description,
+    )
+
+    messages.success(request, f"Created a copy: {copied.name}")
+    return redirect(reverse("admin:tracker_ratioview_change", args=[copied.pk]))
 
 
 def day_json(request, date_str):

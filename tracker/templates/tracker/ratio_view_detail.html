@@ -12,9 +12,17 @@
                 ({{ total_days }} workdays)
             </p>
         </div>
-        <a href="{% url 'ratio_view_list' %}" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-            Back to List
-        </a>
+        <div class="flex items-center space-x-2">
+            <form method="post" action="{% url 'ratio_view_copy' ratio_view.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200">
+                    Make a copy
+                </button>
+            </form>
+            <a href="{% url 'ratio_view_list' %}" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                Back to List
+            </a>
+        </div>
     </div>
     {% if ratio_view.description %}
         <p class="text-gray-700 dark:text-gray-300 mt-4">{{ ratio_view.description|linebreaksbr }}</p>
