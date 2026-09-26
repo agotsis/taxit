@@ -12,6 +12,9 @@ wheels/
 # Database
 db.sqlite3
 
+# agents
+.devin
+
 # Environment variables
 .env
 

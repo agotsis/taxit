@@ -30,7 +30,7 @@
                                 <span class="text-sm text-gray-600 dark:text-gray-400">{{ data.count }} / {{ data.threshold }} days</span>
                             </div>
                             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                                <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: min({{ data.percentage|floatformat:0 }}%, 100%)"></div>
+                                <div class="state-progress bg-blue-600 h-2.5 rounded-full transition-all duration-300" data-percentage="{{ data.percentage|floatformat:0 }}"></div>
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ data.percentage|floatformat:1 }}% of threshold</div>
                         </div>
@@ -49,9 +49,9 @@
                 <a href="{% url 'day_bulk_edit' %}" class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded hover:bg-blue-700 transition-colors duration-200">
                     Bulk Edit Days
                 </a>
-                <a href="{% url 'admin:tracker_day_add' %}" class="block w-full px-4 py-2 bg-green-600 text-white text-center rounded hover:bg-green-700 transition-colors duration-200">
+                <button type="button" onclick="openAddDayModal()" class="block w-full px-4 py-2 bg-green-600 text-white text-center rounded hover:bg-green-700 transition-colors duration-200">
                     Add Single Day
-                </a>
+                </button>
                 <a href="{% url 'admin:tracker_state_changelist' %}" class="block w-full px-4 py-2 bg-gray-600 text-white text-center rounded hover:bg-gray-700 transition-colors duration-200">
                     Manage States
                 </a>
@@ -65,6 +65,31 @@
 {% else %}
     {% include 'tracker/_calendar_month.html' %}
 {% endif %}
+
+<!-- Add Day Modal -->
+<div id="addDayModal" class="fixed inset-0 hidden overflow-y-auto h-full w-full z-50" style="background-color: rgba(0, 0, 0, 0.2);">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white dark:bg-gray-800 transition-colors duration-200">
+        <div class="mt-3">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Add Single Day</h3>
+            <form id="addDayForm">
+                <div class="mb-4">
+                    <label for="addDayDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Date</label>
+                    <input type="date" id="addDayDate" required
+                           class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                </div>
+
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeAddDayModal()" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200">
+                        Continue
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <!-- Day Edit Modal -->
 <div id="dayModal" class="fixed inset-0 hidden overflow-y-auto h-full w-full z-50" style="background-color: rgba(0, 0, 0, 0.2);">
@@ -107,7 +132,7 @@
                     <select name="office" id="modalOffice" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                         <option value="">None</option>
                         {% for office in offices %}
-                            <option value="{{ office.id }}">{{ office.name }}</option>
+                            <option value="{{ office.id }}" data-state-id="{{ office.state_id|default:'' }}">{{ office.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -190,6 +215,27 @@
 </div>
 
 <script>
+document.querySelectorAll('.state-progress').forEach(progress => {
+    progress.style.width = `${Math.min(Number(progress.dataset.percentage), 100)}%`;
+});
+
+function openAddDayModal() {
+    document.getElementById('addDayDate').value = '';
+    document.getElementById('addDayModal').classList.remove('hidden');
+}
+
+function closeAddDayModal() {
+    document.getElementById('addDayModal').classList.add('hidden');
+}
+
+document.getElementById('addDayForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const dateStr = document.getElementById('addDayDate').value;
+    if (!dateStr) return;
+    closeAddDayModal();
+    openDayModal(dateStr);
+});
+
 function openDayModal(dateStr) {
     document.getElementById('modalDate').textContent = dateStr;
     document.getElementById('modalDateInput').value = dateStr;
@@ -214,6 +260,7 @@ function openDayModal(dateStr) {
                         if (checkbox) checkbox.checked = true;
                     });
                 }
+                deriveStateFromOffice();
             } else {
                 // Reset form for new day
                 document.getElementById('modalDayType').value = 'WORK';
@@ -224,6 +271,17 @@ function openDayModal(dateStr) {
         })
         .catch(error => console.error('Error loading day data:', error));
 }
+
+function deriveStateFromOffice() {
+    const office = document.getElementById('modalOffice').selectedOptions[0];
+    const stateId = office.dataset.stateId;
+    if (stateId) {
+        const checkbox = document.querySelector(`input[name="states"][value="${stateId}"]`);
+        if (checkbox) checkbox.checked = true;
+    }
+}
+
+document.getElementById('modalOffice').addEventListener('change', deriveStateFromOffice);
 
 function closeDayModal() {
     document.getElementById('dayModal').classList.add('hidden');

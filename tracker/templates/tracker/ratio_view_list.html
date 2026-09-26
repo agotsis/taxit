@@ -45,7 +45,7 @@
                             <span class="text-sm font-bold text-blue-700 dark:text-blue-300">{{ item.highest_state.percentage|floatformat:1 }}%</span>
                         </div>
                         <div class="w-full bg-blue-200 dark:bg-blue-800 rounded-full h-1.5 mt-2">
-                            <div class="bg-blue-600 dark:bg-blue-400 h-1.5 rounded-full" style="width: {{ item.highest_state.percentage|floatformat:0 }}%"></div>
+                            <div class="state-progress bg-blue-600 dark:bg-blue-400 h-1.5 rounded-full" data-percentage="{{ item.highest_state.percentage|floatformat:0 }}"></div>
                         </div>
                     </div>
                 {% endif %}
@@ -79,4 +79,10 @@
         </div>
     {% endfor %}
 </div>
+
+<script>
+document.querySelectorAll('.state-progress').forEach(progress => {
+    progress.style.width = `${Math.min(Number(progress.dataset.percentage), 100)}%`;
+});
+</script>
 {% endblock %}

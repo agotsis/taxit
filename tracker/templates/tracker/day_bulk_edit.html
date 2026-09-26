@@ -76,7 +76,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                     <option value="">-- No office --</option>
                     {% for office in offices %}
-                        <option value="{{ office.id }}">{{ office.name }}</option>
+                        <option value="{{ office.id }}" data-state-id="{{ office.state_id|default:'' }}">{{ office.name }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -103,4 +103,14 @@
         <li>Day type and office are optional - leave blank to keep existing values</li>
     </ul>
 </div>
+
+<script>
+document.getElementById('office').addEventListener('change', function() {
+    const stateId = this.selectedOptions[0].dataset.stateId;
+    if (stateId) {
+        const checkbox = document.querySelector(`input[name="states"][value="${stateId}"]`);
+        if (checkbox) checkbox.checked = true;
+    }
+});
+</script>
 {% endblock %}

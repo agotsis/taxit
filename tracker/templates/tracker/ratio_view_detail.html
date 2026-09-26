@@ -41,7 +41,7 @@
                             <span class="text-sm text-gray-600 dark:text-gray-400">{{ data.count }} / {{ total_workdays_logged }} days</span>
                         </div>
                         <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 overflow-hidden">
-                            <div class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: min({{ data.ratio|floatformat:0 }}%, 100%)"></div>
+                            <div class="state-progress bg-blue-600 h-2.5 rounded-full transition-all duration-300" data-percentage="{{ data.ratio|floatformat:0 }}"></div>
                         </div>
                         <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ data.ratio|floatformat:1 }}% of days</div>
                     </div>
@@ -118,7 +118,7 @@
                     <select name="office" id="modalOffice" class="w-full border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
                         <option value="">None</option>
                         {% for office in offices %}
-                            <option value="{{ office.id }}">{{ office.name }}</option>
+                            <option value="{{ office.id }}" data-state-id="{{ office.state_id|default:'' }}">{{ office.name }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -197,6 +197,10 @@
 </div>
 
 <script>
+document.querySelectorAll('.state-progress').forEach(progress => {
+    progress.style.width = `${Math.min(Number(progress.dataset.percentage), 100)}%`;
+});
+
 function openDayModal(dateStr) {
     document.getElementById('modalDate').textContent = dateStr;
     document.getElementById('modalDateInput').value = dateStr;
@@ -221,6 +225,7 @@ function openDayModal(dateStr) {
                         if (checkbox) checkbox.checked = true;
                     });
                 }
+                deriveStateFromOffice();
             } else {
                 // Reset form for new day
                 document.getElementById('modalDayType').value = 'WORK';
@@ -231,6 +236,17 @@ function openDayModal(dateStr) {
         })
         .catch(error => console.error('Error loading day data:', error));
 }
+
+function deriveStateFromOffice() {
+    const office = document.getElementById('modalOffice').selectedOptions[0];
+    const stateId = office.dataset.stateId;
+    if (stateId) {
+        const checkbox = document.querySelector(`input[name="states"][value="${stateId}"]`);
+        if (checkbox) checkbox.checked = true;
+    }
+}
+
+document.getElementById('modalOffice').addEventListener('change', deriveStateFromOffice);
 
 function closeDayModal() {
     document.getElementById('dayModal').classList.add('hidden');
