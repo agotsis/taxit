@@ -1,0 +1,3 @@
+## 2026-10-16 - Added Required Indicator Visuals
+**Learning:** Some forms used the native HTML5 `required` attribute for validation, but lacked a visual indicator on the label. This forces users to attempt submission or interact with the field to discover it's required. Providing a clear visual cue (like an asterisk) next to the label significantly improves the form-filling experience by setting correct expectations upfront.
+**Action:** When adding or reviewing forms, always ensure that fields marked as `required` have a corresponding visual indicator (e.g., `<span class="text-red-500">*</span>`) in their `<label>`.
